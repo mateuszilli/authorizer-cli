@@ -35,8 +35,8 @@ process.stdin.on('data', (stdin) => {
 
                 let highFrequencySmallInterval = false;
                 let countHighFrequencySmallInterval = 0;
-                let lengthTimeTransaction = transactions.length - 1;
-                for (var i = lengthTimeTransaction; i >= 0; i--) {
+                let lengthTransaction = transactions.length - 1;
+                for (var i = lengthTransaction; i >= 0; i--) {
                     const time = new Date(transactions[i]['time']);
                     const diff = ((((timeTransaction - time) % 86400000) % 3600000) / 60000);
 
@@ -49,9 +49,23 @@ process.stdin.on('data', (stdin) => {
                     }
                 }
 
+                let doubleTransaction = false;
+                for (var i = lengthTransaction; i >= 0; i--) {
+                    const time = new Date(transactions[i]['time']);
+                    const diff = ((((timeTransaction - time) % 86400000) % 3600000) / 60000);
+
+                    if (
+                        transactions[i]['merchant'] === transaction['merchant'] && 
+                        transactions[i]['amount'] === transaction['amount'] && 
+                        diff <= 2
+                    ) {
+                        doubleTransaction = true;
+                    }
+                }
+
                 if (highFrequencySmallInterval) {
                     violations.push('high-frequency-small-interval');
-                } else if (1 == 2) {
+                } else if (doubleTransaction) {
                     violations.push('double-transaction');
                 } else {
                     transactions.push(transaction);
