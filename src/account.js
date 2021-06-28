@@ -3,7 +3,6 @@ export default class Account {
     #available_limit;
     #transactions = [];
 
-
     getActiveCard() {
         return this.#active_card;
     }
