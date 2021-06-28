@@ -27,13 +27,39 @@ process.stdin.on('data', (stdin) => {
                 violations.push('card-not-active');
             } else if (transaction['amount'] > objectAccount.getAvailableLimit()) {
                 violations.push('insufficient-limit');
-            } else if (1 == 2) {
-                violations.push('high-frequency-small-interval');
-            } else if (1 == 2) {
-                violations.push('double-transaction');
-            } else {
-                const newAvailableLimit = objectAccount.getAvailableLimit() - transaction['amount'];
-                objectAccount.setAvailableLimit(newAvailableLimit);
+            } 
+
+            if (!violations.length) {
+                const timeTransaction = new Date(transaction['time']);
+                let transactions = objectAccount.getTransactions();
+
+                let highFrequencySmallInterval = false;
+                let countHighFrequencySmallInterval = 0;
+                let lengthTimeTransaction = transactions.length - 1;
+                for (var i = lengthTimeTransaction; i >= 0; i--) {
+                    const time = new Date(transactions[i]['time']);
+                    const diff = ((((timeTransaction - time) % 86400000) % 3600000) / 60000);
+
+                    if (diff <= 2) {
+                        countHighFrequencySmallInterval++;
+
+                        if (countHighFrequencySmallInterval > 2) {
+                            highFrequencySmallInterval = true;
+                        }
+                    }
+                }
+
+                if (highFrequencySmallInterval) {
+                    violations.push('high-frequency-small-interval');
+                } else if (1 == 2) {
+                    violations.push('double-transaction');
+                } else {
+                    transactions.push(transaction);
+                    objectAccount.setTransactions(transactions);
+
+                    const newAvailableLimit = objectAccount.getAvailableLimit() - transaction['amount'];
+                    objectAccount.setAvailableLimit(newAvailableLimit);
+                }
             }
         }
 
